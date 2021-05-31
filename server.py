@@ -5,11 +5,34 @@ from Crypto.Util.Padding import pad, unpad
 from Crypto.Cipher import AES
 from Crypto.Random import get_random_bytes
 import base64
+import argparse
+import sys
 
-s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-PORT = 7655
-SERVER = socket.gethostbyname(socket.gethostname())
-print(SERVER)
+parser = argparse.ArgumentParser()
+parser.add_argument("-p", "--port", help="port")
+parser.add_argument(
+    "-i", "--ip", help="ip address of server")
+args = parser.parse_args()
+
+if not (args.ip and args.port):
+    print("Insufficient Arguments!")
+    print("\u001b[31;1m\n")
+    print(
+        "USAGE:\tpython3 server.py -p PORT  -i IP_ADDRESS")
+    print("\n\n\u001b[0m")
+    sys.exit()
+
+try:
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    PORT = int(args.port)
+    SERVER = args.ip
+except:
+    print("Invalid Arguments!")
+    print("\u001b[31;1m\n")
+    print(
+        "USAGE:\tpython3 server.py -p PORT  -i IP_ADDRESS")
+    print("\n\n\u001b[0m")
+    sys.exit()
 s.bind((SERVER, PORT))
 print('''\033[; 1m \033[1; 39m
 

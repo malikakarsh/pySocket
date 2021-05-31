@@ -37,25 +37,31 @@ parser.add_argument(
     "-i", "--ip", help="ip address of server")
 parser.add_argument("-u", "--user", help="username")
 args = parser.parse_args()
+
 if not (args.ip and args.port and args.user):
     print("Insufficient Arguments!")
+    print("\u001b[31;1m\n")
+    print(
+        "USAGE:\tpython3 client.py -p PORT  -i IP_ADDRESS_OF_SERVER -u USER")
+    print("\n\n\u001b[0m")
     sys.exit()
 
 try:
     c = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     PORT = int(args.port)
     SERVER = args.ip
-    print(PORT, SERVER)
     c.connect((SERVER, PORT))
     # user = getpass.getuser()
     user = str(args.user)
     c.send(user.encode('utf-8'))
 except:
     print("Invalid Arguments!")
+    print("\u001b[31;1m\n")
+    print(
+        "USAGE:\tpython3 client.py -p PORT  -i IP_ADDRESS_OF_SERVER -u USER")
+    print("\n\n\u001b[0m")
     sys.exit()
 
-print('''\033[1;36m
-Developed by:-\033[0;0m''')
 print('''\033[;1m \033[1;39m 
 
 ╱╱╱╱╱╱╱╭━━━╮╱╱╱╱╱╭╮╱╱╱╱╭╮
