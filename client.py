@@ -8,6 +8,7 @@ from Crypto.Util.Padding import pad, unpad
 from Crypto.Cipher import AES
 from Crypto.Random import get_random_bytes
 import base64
+import argparse
 
 # Change it to any value of 16 byte length (should be same for client and server)
 key = '1234567891234567'.encode('utf-8')
@@ -30,13 +31,28 @@ def decrypt(enc):
 
 
 os.system('clear')
-c = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-PORT = 7655
-SERVER = socket.gethostbyname(socket.gethostname())
-c.connect((SERVER, PORT))
-# user = getpass.getuser()
-user = input("Enter your username: ")
-c.send(user.encode('utf-8'))
+parser = argparse.ArgumentParser()
+parser.add_argument("-p", "--port", help="port")
+parser.add_argument(
+    "-i", "--ip", help="ip address of server")
+parser.add_argument("-u", "--user", help="username")
+args = parser.parse_args()
+if not (args.ip and args.port and args.user):
+    print("Insufficient Arguments!")
+    sys.exit()
+
+try:
+    c = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    PORT = int(args.port)
+    SERVER = args.ip
+    print(PORT, SERVER)
+    c.connect((SERVER, PORT))
+    # user = getpass.getuser()
+    user = str(args.user)
+    c.send(user.encode('utf-8'))
+except:
+    print("Invalid Arguments!")
+    sys.exit()
 
 print('''\033[1;36m
 Developed by:-\033[0;0m''')

@@ -9,6 +9,7 @@ import base64
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 PORT = 7655
 SERVER = socket.gethostbyname(socket.gethostname())
+print(SERVER)
 s.bind((SERVER, PORT))
 print('''\033[; 1m \033[1; 39m
 
