@@ -1,24 +1,46 @@
 import socket
 import threading
 import pickle
-from Crypto import Random
+from Crypto.Util.Padding import pad, unpad
 from Crypto.Cipher import AES
+from Crypto.Random import get_random_bytes
+import base64
 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-PORT = 7654
+PORT = 7655
 SERVER = socket.gethostbyname(socket.gethostname())
 s.bind((SERVER, PORT))
-print('''\033[;1m \033[1;39m
-               _________              __           __   
-______ ___.__./   _____/ ____   ____ |  | __ _____/  |_ 
-\____ <   |  |\_____  \ /  _ \_/ ___\|  |/ // __ \   __\
-|  |_> >___  |/        (  <_> )  \___|    <\  ___/|  |  
-|   __// ____/_______  /\____/ \___  >__|_ \\___  >__|  
-|__|   \/            \/            \/     \/    \/  
-                        Developed by:- Akarsh  
-\033[0;0m''')
+print('''\033[; 1m \033[1; 39m
+
+╱╱╱╱╱╱╱╭━━━╮╱╱╱╱╱╭╮╱╱╱╱╭╮
+╱╱╱╱╱╱╱┃╭━╮┃╱╱╱╱╱┃┃╱╱╱╭╯╰╮
+╭━━┳╮╱╭┫╰━━┳━━┳━━┫┃╭┳━┻╮╭╯
+┃╭╮┃┃╱┃┣━━╮┃╭╮┃╭━┫╰╯┫┃━┫┃
+┃╰╯┃╰━╯┃╰━╯┃╰╯┃╰━┫╭╮┫┃━┫╰╮
+┃╭━┻━╮╭┻━━━┻━━┻━━┻╯╰┻━━┻━╯
+┃┃╱╭━╯┃         Developed By: Akarsh
+╰╯╱╰━━╯   
+\033[0; 0m''')
 members = []
-messages = []
+
+# Change it to any value of 16 byte length (should be same for client and server)
+key = '1234567891234567'.encode('utf-8')
+
+
+def encrypt(message):
+    iv = get_random_bytes(16)
+    cipher1 = AES.new(key, AES.MODE_CBC, iv)
+    ct = cipher1.encrypt(pad(message, 16))
+    return base64.b64encode(iv+ct)
+
+
+def decrypt(enc):
+    ct = base64.b64decode(enc)
+    iv = ct[:16]
+    ct = ct[16:]
+    cipher2 = AES.new(key, AES.MODE_CBC, iv)
+    pt = unpad(cipher2.decrypt(ct), 16)
+    return pt.decode('utf-8')
 
 
 def client(client_socket, addr, USER):
@@ -26,19 +48,21 @@ def client(client_socket, addr, USER):
         try:
             msg = client_socket.recv(1024)
             user, message = pickle.loads(msg)
-            if message == "exit()":
+            msg = decrypt(message)
+            if msg == "exit()":
                 members.remove(client_socket)
                 client_socket.close()
+                print(f'[Active] {len(members)}')
                 break
 
             else:
-                messages.append(f"{user}: {message}\n")
                 for client in members:
                     # if (client != client_socket):
                     client.send(pickle.dumps((user, message)))
 
         except:
             print("Force Terminated!")
+            print(f'[Active] {len(members)}')
             members.remove(client_socket)
             client_socket.close()
             break
@@ -50,17 +74,16 @@ def threads():
         try:
             client_socket, addr = s.accept()
             user = client_socket.recv(1024).decode('utf-8')
-            for client in members:
-                client.send(f"{user} joined!".encode('utf-8'))
+            for member in members:
+                msg = encrypt("hopped in!".encode('utf-8'))
+                member.send(pickle.dumps((user, msg)))
 
             members.append(client_socket)
-            for message in messages:
-                client_socket.send(message.encode('utf-8'))
+            print(f'[Active] {len(members)}')
 
             thread = threading.Thread(
                 target=client, args=(client_socket, addr, user))
             thread.start()
-            client_socket.send("jibrish".encode('utf-8'))
 
         except:
             s.close()
